@@ -3,6 +3,7 @@ package com.interview.user_management_service.service;
 import com.interview.user_management_service.model.User;
 import com.interview.user_management_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.mapping.Any;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -33,4 +34,10 @@ public class UserService {
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
+
+    public boolean isAvailable(User user) {
+        Optional<User> existingUser = userRepository.findByFirstNameAndLastName(user.getFirstName(), user.getLastName());
+        return existingUser.isPresent();
+    }
+
 }

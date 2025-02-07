@@ -3,6 +3,7 @@ package com.interview.user_management_service.controller;
 import com.interview.user_management_service.model.User;
 import com.interview.user_management_service.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,9 @@ public class UserController {
         if (user.getLastName() == null || user.getLastName().isEmpty()) {
             throw new ValidationException("A required body parameter is missing or invalid: lastName");
         }
+        if(userService.isAvailable(user)){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("The given user is already existing!"); //Here checking whether the user is already exist on the database or not using full name (since there is no other indicator)
+        }
 
         try {
             User createdUser = userService.createUser(user);
@@ -38,7 +42,11 @@ public class UserController {
     @GetMapping
     public ResponseEntity<?> getAllUsers() {
         try {
-            return ResponseEntity.ok(userService.getAllUsers());
+            List<User> users = userService.getAllUsers();
+            if(users.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user found!");
+            }
+            return ResponseEntity.ok(users);
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch users", e);
         }
@@ -55,6 +63,9 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody @Valid User user) {
+        if(!userService.getUser(id).isPresent()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user exist for the given Id");
+        }
         try {
             return ResponseEntity.ok(userService.updateUser(id, user));
         } catch (Exception e) {
@@ -64,6 +75,9 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        if(!userService.getUser(id).isPresent()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user exist for the given Id");
+        }
         try {
             userService.deleteUser(id);
             return ResponseEntity.noContent().build();
