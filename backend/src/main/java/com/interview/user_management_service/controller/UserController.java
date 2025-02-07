@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import javax.validation.Valid;
+import javax.validation.ValidationException;
 
 @RestController
 @RequestMapping("/api/users")
@@ -16,41 +18,57 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody User user) {
-        if(user.getFirstName() == null){
-            return ResponseEntity.badRequest().body("A required body parameter is missing: firstName");
-        }else if(user.getLastName() == null){
-            return ResponseEntity.badRequest().body("A required body parameter is missing: lastName");
+    public ResponseEntity<?> createUser(@RequestBody @Valid User user) {
+        if (user.getFirstName() == null || user.getFirstName().isEmpty()) {
+            throw new ValidationException("A required body parameter is missing or invalid: firstName");
         }
-        if(user.getFirstName().isEmpty() || user.getLastName().isEmpty()){
-            return ResponseEntity.badRequest().body("Both firstName or lastName cannot be null!");
-        }
-        try{
-            User createdUser = userService.createUser(user);
-            return ResponseEntity.ok(user);
-        }catch (Exception e){
-            return ResponseEntity.internalServerError().build();
+        if (user.getLastName() == null || user.getLastName().isEmpty()) {
+            throw new ValidationException("A required body parameter is missing or invalid: lastName");
         }
 
+        try {
+            User createdUser = userService.createUser(user);
+            return ResponseEntity.ok(createdUser);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create user", e);
+        }
     }
+
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<?> getAllUsers() {
+        try {
+            return ResponseEntity.ok(userService.getAllUsers());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch users", e);
+        }
     }
+
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<User>> getUser(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUser(id));
+    public ResponseEntity<?> getUser(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(userService.getUser(id).orElseThrow(() -> new ValidationException("User not found")));
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching user", e);
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-        return ResponseEntity.ok(userService.updateUser(id, user));
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody @Valid User user) {
+        try {
+            return ResponseEntity.ok(userService.updateUser(id, user));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update user", e);
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete user", e);
+        }
     }
 }
