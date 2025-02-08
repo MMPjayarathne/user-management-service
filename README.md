@@ -1,5 +1,5 @@
 
-# User Management Application
+# User Management Service
 Auther: Masith Pramuitha
 This is a simple User Management application built using **React** for the frontend and **Spring Boot** for the backend. The application allows users to:
 
