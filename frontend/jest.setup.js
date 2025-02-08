@@ -1,6 +1,7 @@
+// Add custom jest matchers from @testing-library/jest-dom
 import '@testing-library/jest-dom';
 
-// Mock window.matchMedia
+// Mock matchMedia if needed
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation(query => ({
@@ -14,16 +15,3 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
-
-// Mock window.fetch
-global.fetch = jest.fn();
-
-// Mock localStorage and sessionStorage
-const mockStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  clear: jest.fn()
-};
-
-global.localStorage = mockStorage;
-global.sessionStorage = mockStorage;
