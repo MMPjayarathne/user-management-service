@@ -13,7 +13,7 @@ const LoginPage = () => {
       const response = await axios.post(`${BACKEND_URL}/admin/login`, credentials);
       // localStorage.setItem("auth", response.data.token);
       sessionStorage.setItem("token", response.data.token);
-      console.log("Token",response.data.token);
+      // console.log("Token",response.data.token);
       navigate("/home");
     } catch {
       setError("Invalid username or password");
