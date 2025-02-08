@@ -1,11 +1,14 @@
 package com.interview.user_management_service.service;
 
 import com.interview.user_management_service.model.Admin;
+import com.interview.user_management_service.model.User;
 import com.interview.user_management_service.repository.AdminRepository;
 import com.interview.user_management_service.util.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class AdminService {
@@ -59,5 +62,13 @@ public class AdminService {
             return registerAdmin(admin);
         }
         return null;
+    }
+
+    public boolean isAvailable(Admin admin) {
+        Admin existingAdmin = adminRepository.findByUsername(admin.getUsername());
+        if(existingAdmin != null){
+            return true;
+        }
+        return false;
     }
 }
